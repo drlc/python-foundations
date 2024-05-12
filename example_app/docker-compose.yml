@@ -1,0 +1,40 @@
+version: "3.7"
+
+services:
+  postgres:
+    image: "postgres:16.3-alpine3.19"
+    container_name: "postgres-base"
+    restart: always
+    environment:
+      - POSTGRES_USER=local-user
+      - POSTGRES_PASSWORD=local-pwd
+      - POSTGRES_DB=local-database
+      - POSTGRES_HOST=localhost
+      - POSTGRES_PORT=5432
+    ports:
+      - "5432:5432"
+    volumes:
+      - "./postgres-docker-data/data:/var/lib/postgresql/data:delegated"
+
+  mongo:
+    image: "mongo:7.0"
+    container_name: "mongo-base"
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: local-user
+      MONGO_INITDB_ROOT_PASSWORD: local-pwd
+    ports:
+      - "27017:27017"
+    volumes:
+      - "./mongo-docker-data/data:/data/db:delegated"
+
+  mongo-express:
+    image: mongo-express:1.0.2-20-alpine3.19
+    container_name: "mongo-express-base"
+    restart: always
+    ports:
+      - "8082:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: local-user
+      ME_CONFIG_MONGODB_ADMINPASSWORD: local-pwd
+      ME_CONFIG_MONGODB_URL: mongodb://local-user:local-pwd@mongo:27017/

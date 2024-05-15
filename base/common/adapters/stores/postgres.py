@@ -88,7 +88,7 @@ class PostgresConnection(StoreConnection[PgConnection, PgConnection]):
                         port=self.config.port,
                         database=self.config.database,
                     )
-                    connection.autocommit = False
+                    connection.autocommit = True
                     return connection
         except Exception as err:
             msg = f"PostgresConnection: unable to establish connection. {str(err)}"

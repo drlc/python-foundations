@@ -137,10 +137,14 @@ class PostgresRepo(Repository, abc.ABC):
             cols=sql.SQL(", ").join(map(sql.Identifier, item)),
             placeholders=sql.SQL(", ").join(placeholders),
         )
-        curs.cursor.execute(
-            query=query,
-            vars={k: PgJson(v) if isinstance(v, dict) else v for k, v in item.items()},
-        )
+        try:
+            curs.cursor.execute(
+                query=query,
+                vars={k: PgJson(v) if isinstance(v, dict) else v for k, v in item.items()},
+            )
+        except psycopg2.errors.UniqueViolation as err:
+            msg = f"unique violation: {err}"
+            raise StoreErrors.DuplicateKey(msg)
         return curs.cursor.fetchone()
 
     def _update(

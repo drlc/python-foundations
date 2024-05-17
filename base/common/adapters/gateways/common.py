@@ -59,6 +59,7 @@ class HttpGateway(abc.ABC):
         auth_header: Dict = {},
         params=None,
         json=None,
+        returned_raw=False,
     ):
         try:
             headers = auth_header.copy()
@@ -73,6 +74,8 @@ class HttpGateway(abc.ABC):
                 json=json,
             )
             response.raise_for_status()
+            if returned_raw:
+                return response
             return response.json()
         except requests.exceptions.HTTPError as err:
             resp_err = err.response.json()

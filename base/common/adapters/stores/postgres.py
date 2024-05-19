@@ -68,6 +68,7 @@ class PostgresConnection(StoreConnection[PgConnection, PgConnection]):
     def __init__(self, config: PostgresConnectionSettings, parent_logger: Logger):
         self.config = PostgresConnectionConfig(**config.model_dump())
         self.logger = parent_logger.child("postgres")
+        self.connection = self.connect()
 
     def connect(self) -> PgConnection:
         self.logger.debug("PostgresConnection: connecting to database")
@@ -89,7 +90,7 @@ class PostgresConnection(StoreConnection[PgConnection, PgConnection]):
                         port=self.config.port,
                         database=self.config.database,
                     )
-                    connection.autocommit = True
+                    connection.autocommit = False
                     return connection
         except Exception as err:
             msg = f"PostgresConnection: unable to establish connection. {str(err)}"
@@ -101,22 +102,22 @@ class PostgresConnection(StoreConnection[PgConnection, PgConnection]):
         return connection.closed == 0
 
     def create_session(self, connection: PgConnection) -> PgConnection:
-        return connection
+        return connection.cursor(cursor_factory=extras.RealDictCursor)
 
     def rollback_session(self, session: PgConnection):
-        # session.rollback()
+        self.connection.rollback()
         pass
 
     def commit_session(self, session: PgConnection):
-        # session.commit()
+        self.connection.commit()
         pass
 
     def close_session(self, session: PgConnection):
-        pass
+        session.close()
 
     def create_cursor(self, session: PgConnection) -> PostgresCursor:
         return PostgresCursor(
-            cursor=session.cursor(cursor_factory=extras.RealDictCursor),
+            cursor=session,
             schema_name=self.config.schema_name,
         )
 

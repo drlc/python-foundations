@@ -48,8 +48,23 @@ class WithStoreConnection(abc.ABC):
             self.logger.info("starting usecase", req=kwargs.get("req"))
             if kwargs.get("curs"):
                 res = func(*args, **kwargs)
-            with self.conn.cursor() as curs:
-                res = func(*args, **kwargs, curs=curs)
+            else:
+                with self.conn.cursor() as curs:
+                    res = func(*args, **kwargs, curs=curs)
+            self.logger.info("usecase finished")
+            return res
+
+        return inner
+
+    @staticmethod
+    def with_manual_cursor(func):
+        def inner(*args, **kwargs):
+            self: WithStoreConnection = args[0]
+            self.logger.info("starting usecase", req=kwargs.get("req"))
+            if kwargs.get("curs"):
+                res = func(*args, **kwargs)
+            else:
+                res = func(*args, **kwargs, curs=self.conn)
             self.logger.info("usecase finished")
             return res
 

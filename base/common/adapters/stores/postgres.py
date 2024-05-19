@@ -70,6 +70,7 @@ class PostgresConnection(StoreConnection[PgConnection, PgConnection]):
         self.logger = parent_logger.child("postgres")
 
     def connect(self) -> PgConnection:
+        self.logger.debug("PostgresConnection: connecting to database")
         extensions.register_adapter(dict, extras.Json)
         retry_strat = {
             "wait": wait_random_exponential(
@@ -95,19 +96,23 @@ class PostgresConnection(StoreConnection[PgConnection, PgConnection]):
             raise StoreErrors.Connection(msg)
 
     def is_connected(self, connection: PgConnection) -> bool:
-        return False
+        if not connection:
+            return False
+        return connection.closed == 0
 
     def create_session(self, connection: PgConnection) -> PgConnection:
         return connection
 
     def rollback_session(self, session: PgConnection):
-        session.rollback()
+        # session.rollback()
+        pass
 
     def commit_session(self, session: PgConnection):
-        session.commit()
+        # session.commit()
+        pass
 
     def close_session(self, session: PgConnection):
-        session.close()
+        pass
 
     def create_cursor(self, session: PgConnection) -> PostgresCursor:
         return PostgresCursor(

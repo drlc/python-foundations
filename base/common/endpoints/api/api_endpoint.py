@@ -1,25 +1,17 @@
 import abc
-import inspect
 from typing import Generic, List, Optional, TypeVar
 
 from fastapi.routing import APIRoute
 from pydantic import BaseModel
 
+from base.common.endpoints import get_all_by_class
 from base.common.usecases import Pagination
 
 D = TypeVar("D")
 
 
 def get_all_endpoints(module):
-    endpoints = []
-
-    for _, sub_module in inspect.getmembers(module):
-        if inspect.ismodule(sub_module):
-            members = dict(inspect.getmembers(sub_module))
-            if "APIEndpoint" in members:
-                endpoints.append(members["APIEndpoint"]())
-
-    return endpoints
+    return get_all_by_class(module, "APIEndpoint")
 
 
 class HTTPResponseWrapper(BaseModel, Generic[D]):

@@ -79,10 +79,12 @@ class HttpGateway(abc.ABC):
             return response.json()
         except requests.exceptions.HTTPError as err:
             resp_err = err.response.json()
-            if set(resp_err.keys()) != {"errors"}:
+            msg = str(resp_err)
+            if isinstance(resp_err, dict) and set(resp_err.keys()) != {"errors"}:
                 msg = f"unexpected error format: {resp_err}"
                 raise GatewayErrors.BaseError(msg)
-            msg = "; ".join(x.detail for x in JsonApiErrors(**err.response.json()).errors)
+            elif isinstance(resp_err, dict):
+                msg = "; ".join(x.detail for x in JsonApiErrors(**err.response.json()).errors)
             if err.response.status_code == 404:
                 raise GatewayErrors.NotFound(msg)
             if err.response.status_code == 422:

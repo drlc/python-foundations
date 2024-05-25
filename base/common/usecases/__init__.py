@@ -42,19 +42,22 @@ class WithStoreConnection(abc.ABC):
         return ADMIN_GROUP in CallContext.get_authenticated_user().groups
 
     @staticmethod
-    def with_cursor(func, autocomit=False):
-        def inner(*args, **kwargs):
-            self: WithStoreConnection = args[0]
-            self.logger.info("starting usecase", req=kwargs.get("req"))
-            if kwargs.get("curs"):
-                res = func(*args, **kwargs)
-            else:
-                with self.conn.cursor(autocomit) as curs:
-                    res = func(*args, **kwargs, curs=curs)
-            self.logger.info("usecase finished")
-            return res
+    def with_cursor(autocommit=False):
+        def actual_decorator(func):
+            def inner(*args, **kwargs):
+                self: WithStoreConnection = args[0]
+                self.logger.info("starting usecase", req=kwargs.get("req"))
+                if kwargs.get("curs"):
+                    res = func(*args, **kwargs)
+                else:
+                    with self.conn.cursor(autocommit) as curs:
+                        res = func(*args, **kwargs, curs=curs)
+                self.logger.info("usecase finished")
+                return res
 
-        return inner
+            return inner
+
+        return actual_decorator
 
     @staticmethod
     def with_manual_cursor(func):

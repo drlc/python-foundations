@@ -87,6 +87,7 @@ class StoreConnection(Generic[C, S]):
         if not self.is_connected(active_connection):
             active_connection = self.connect()
             self.connection = active_connection
+        session = None
         try:
             session = self.create_session(active_connection, autocommit)
             yield self.create_cursor(session)
@@ -97,7 +98,8 @@ class StoreConnection(Generic[C, S]):
         else:
             self.commit_session(session) if not autocommit else None
         finally:
-            self.close_session(session)
+            if session:
+                self.close_session(session)
 
 
 class Repository(abc.ABC):

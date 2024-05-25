@@ -60,7 +60,7 @@ class StoreConnection(Generic[C, S]):
         raise NotImplementedError()  # pragma: no cover
 
     @abc.abstractmethod
-    def create_session(self, connection: C) -> S:
+    def create_session(self, connection: C, autocommit: bool) -> S:
         raise NotImplementedError()  # pragma: no cover
 
     @abc.abstractmethod
@@ -80,20 +80,22 @@ class StoreConnection(Generic[C, S]):
         raise NotImplementedError()  # pragma: no cover
 
     @contextmanager
-    def cursor(self) -> Callable[..., AbstractContextManager[StoreCursor]]:
+    def cursor(
+        self, autocommit: bool = False
+    ) -> Callable[..., AbstractContextManager[StoreCursor]]:
         active_connection = self.connection
         if not self.is_connected(active_connection):
             active_connection = self.connect()
             self.connection = active_connection
         try:
-            session = self.create_session(active_connection)
+            session = self.create_session(active_connection, autocommit)
             yield self.create_cursor(session)
         except Exception as err:
             self.logger.error(f"StoreConnection: {str(err)}")
-            self.rollback_session(session)
+            self.rollback_session(session) if not autocommit else None
             raise err
         else:
-            self.commit_session(session)
+            self.commit_session(session) if not autocommit else None
         finally:
             self.close_session(session)
 

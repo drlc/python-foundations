@@ -101,7 +101,8 @@ class PostgresConnection(StoreConnection[PgConnection, PgConnection]):
             return False
         return connection.closed == 0
 
-    def create_session(self, connection: PgConnection) -> PgConnection:
+    def create_session(self, connection: PgConnection, autocommit: bool) -> PgConnection:
+        connection.autocommit = autocommit
         return connection.cursor(cursor_factory=extras.RealDictCursor)
 
     def rollback_session(self, session: PgConnection):

@@ -71,7 +71,7 @@ class MongoConnection(StoreConnection[MongoClient, PyMongoClientSession]):
             return False
         return True
 
-    def create_session(self, connection: MongoClient) -> PyMongoClientSession:
+    def create_session(self, connection: MongoClient, autocommit: bool) -> PyMongoClientSession:
         session = connection.start_session()
         session.start_transaction(
             read_concern=ReadConcern("snapshot"),

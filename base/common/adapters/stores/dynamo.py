@@ -102,7 +102,7 @@ class DynamoDbConnection(StoreConnection[None, Boto3Session]):
         # everytime the client requests a cursor, it creates a new one
         return False
 
-    def create_session(self, connection: None) -> Boto3Session:
+    def create_session(self, connection: None, autocommit: bool) -> Boto3Session:
         return boto3.session.Session(region_name=self.opts["region_name"])
 
     def rollback_session(self, session: Boto3Session):

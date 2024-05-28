@@ -41,6 +41,12 @@ class PostgresConnectionSettings(StoreConnectionSettings):
     retry_max_total_delay_seconds: int = Field(
         default=1, alias="POSTGRES_CONNECTION_RETRY_MAX_TOTAL_DELAY_SECONDS"
     )
+    pool_min_size: int = Field(default=4, alias="POSTGRES_POOL_MIN_SIZE")
+    pool_max_size: int = Field(default=20, alias="POSTGRES_POOL_MAX_SIZE")
+    pool_client_timeout: int = Field(default=60, alias="POSTGRES_POOL_CLIENT_TIMEOUT")
+    pool_max_lifetime: float = Field(default=3600.0, alias="POSTGRES_POOL_MAX_LIFETIME")
+    pool_max_idle: int = Field(default=600, alias="POSTGRES_POOL_MAX_IDLE")
+    pool_reconnect_timeout: int = Field(default=180, alias="POSTGRES_POOL_RECONNECT_TIMEOUT")
 
 
 class MongoConnectionSettings(StoreConnectionSettings):

@@ -2,7 +2,7 @@ import abc
 import sys
 from contextlib import AbstractContextManager, contextmanager
 from dataclasses import dataclass
-from typing import Any, Callable, Generic, Literal, Optional, TypeVar
+from typing import Any, Callable, ContextManager, Generic, Literal, Optional, Tuple, TypeVar
 
 from pydantic import BaseModel, ConfigDict
 
@@ -60,7 +60,7 @@ class StoreConnection(Generic[C, S]):
         raise NotImplementedError()  # pragma: no cover
 
     @abc.abstractmethod
-    def create_session(self, connection: C, autocommit: bool) -> S:
+    def create_session(self, connection: C, autocommit: bool) -> Tuple[S, Optional[ContextManager]]:
         raise NotImplementedError()  # pragma: no cover
 
     @abc.abstractmethod
@@ -88,8 +88,9 @@ class StoreConnection(Generic[C, S]):
             active_connection = self.connect()
             self.connection = active_connection
         session = None
+        ctx_mng = None
         try:
-            session = self.create_session(active_connection, autocommit)
+            session, ctx_mng = self.create_session(active_connection, autocommit)
             yield self.create_cursor(session)
         except Exception as err:
             self.logger.error(f"StoreConnection: {str(err)}")
@@ -98,6 +99,8 @@ class StoreConnection(Generic[C, S]):
         else:
             self.commit_session(session) if not autocommit else None
         finally:
+            if ctx_mng:
+                ctx_mng.__exit__(None, None, None)
             if session:
                 self.close_session(session)
 

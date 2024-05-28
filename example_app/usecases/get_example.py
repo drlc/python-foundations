@@ -1,5 +1,7 @@
+import datetime
 from typing import Annotated
 
+import ulid
 from fastapi import Depends
 
 from base.common import usecases as common
@@ -30,10 +32,19 @@ class Usecase(common.Usecase):
         self.example_repo = example_repo
         self.example_gateway = example_gateway
 
-    @WithStoreConnection.with_cursor
+    @WithStoreConnection.with_cursor()
     def execute(self, req: UsecaseReq, curs: StoreCursor) -> ExampleDTO:
+        res = self.example_repo.save(
+            curs=curs,
+            example={
+                "id": str(ulid.new()),
+                "created_at": datetime.datetime.now(tz=datetime.timezone.utc),
+                "updated_at": datetime.datetime.now(tz=datetime.timezone.utc),
+                "json_data": {"example_id": req.example_id},
+            },
+        )
         return ExampleDTO(
             usecase_value=self.usecase_settings.account_id,
-            store_value=self.example_repo.get_example(req.example_id),
+            store_value=self.example_repo.get(curs=curs, example_id=res["id"]),
             gateway_value=self.example_gateway.get_example(req.example_id),
         )

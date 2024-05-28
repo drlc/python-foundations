@@ -1,5 +1,5 @@
 from datetime import date, datetime, time
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from pydantic.dataclasses import dataclass
 from pymongo import MongoClient, ReadPreference, WriteConcern
@@ -71,14 +71,16 @@ class MongoConnection(StoreConnection[MongoClient, PyMongoClientSession]):
             return False
         return True
 
-    def create_session(self, connection: MongoClient, autocommit: bool) -> PyMongoClientSession:
+    def create_session(
+        self, connection: MongoClient, autocommit: bool
+    ) -> Tuple[PyMongoClientSession, None]:
         session = connection.start_session()
         session.start_transaction(
             read_concern=ReadConcern("snapshot"),
             write_concern=WriteConcern(w="majority"),
             read_preference=ReadPreference.PRIMARY,
         )
-        return session
+        return session, None
 
     def rollback_session(self, session: PyMongoClientSession):
         session.abort_transaction()

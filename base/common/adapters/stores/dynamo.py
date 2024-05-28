@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, time
 from decimal import Decimal
 from functools import partial
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Dict, List, Optional, Tuple, Type
 
 import boto3
 from boto3.dynamodb.conditions import Attr
@@ -102,8 +102,8 @@ class DynamoDbConnection(StoreConnection[None, Boto3Session]):
         # everytime the client requests a cursor, it creates a new one
         return False
 
-    def create_session(self, connection: None, autocommit: bool) -> Boto3Session:
-        return boto3.session.Session(region_name=self.opts["region_name"])
+    def create_session(self, connection: None, autocommit: bool) -> Tuple[Boto3Session, None]:
+        return boto3.session.Session(region_name=self.opts["region_name"]), None
 
     def rollback_session(self, session: Boto3Session):
         return

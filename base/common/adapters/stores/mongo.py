@@ -1,7 +1,6 @@
 from datetime import date, datetime, time
 from typing import List, Optional, Tuple
 
-from pydantic.dataclasses import dataclass
 from pymongo import MongoClient, ReadPreference, WriteConcern
 from pymongo.client_session import ClientSession as PyMongoClientSession
 from pymongo.database import Database as MnCursor
@@ -31,7 +30,6 @@ class MongoCursor(StoreCursor):
     cursor: MnCursor
 
 
-@dataclass
 class MongoConnectionConfig(StoreConfig):
     uri_strings: str
     database: str
